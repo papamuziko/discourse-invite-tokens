@@ -19,13 +19,13 @@ after_initialize do
   require_dependency 'invite'
   class ::Invite
 
-    def self.generate_invite_tokens(invited_by, quantity = nil, group_names = nil)
+    def self.generate_invite_tokens(invited_by, emails_invited, group_names = nil)
       invite_tokens = []
-      quantity ||= 1
+      
       group_ids = get_group_ids(group_names)
 
-      quantity.to_i.times do
-        invite = Invite.create!(invited_by: invited_by)
+      emails_invited.each do |email_invited|
+        invite = Invite.create!(invited_by: invited_by, email: email_invited)
         group_ids = group_ids - invite.invited_groups.pluck(:group_id)
         group_ids.each do |group_id|
           invite.invited_groups.create!(group_id: group_id)
@@ -121,12 +121,12 @@ after_initialize do
 
     def create_invite_token
       raise Discourse::InvalidAccess unless SiteSetting.invite_tokens_enabled? && guardian.is_admin?
-      params.permit(:username, :email, :quantity, :group_names)
+      params.permit(:username, :email, :emails_invited, :group_names)
 
       username_or_email = params[:username] ? fetch_username : fetch_email
       user = User.find_by_username_or_email(username_or_email)
 
-      invite_tokens = Invite.generate_invite_tokens(user, params[:quantity], params[:group_names])
+      invite_tokens = Invite.generate_invite_tokens(user, fetch_emails_invited, params[:group_names])
       render_json_dump(invite_tokens)
     end
 
@@ -158,6 +158,11 @@ after_initialize do
     def fetch_email
       params.require(:email)
       params[:email]
+    end
+
+    def fetch_emails_invited
+      params.require(:emails_invited)
+      (params[:emails_invited] || "").split(',')
     end
 
     def post_process_invite(user)
