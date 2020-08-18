@@ -55,6 +55,7 @@ after_initialize do
   class DiscourseInviteTokens::InviteTokensController < ::ApplicationController
     requires_plugin PLUGIN_NAME
 
+    skip_around_action :with_resolved_locale
     skip_before_action :check_xhr
     skip_before_action :preload_json
     skip_before_action :redirect_to_login_if_required
