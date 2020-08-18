@@ -45,7 +45,7 @@ after_initialize do
 
         invite.update_column(:email, email)
         invite.topic_invites.create!(invite_id: invite.id, topic_id: topic_id) if topic_id && Topic.find_by_id(topic_id) && !invite.topic_invites.pluck(:topic_id).include?(topic_id)
-        user = InviteRedeemer.new(invite, username, name).redeem
+        user = InviteRedeemer.new(invite: invite, email: email, username: username, name: name).redeem
       end
       user
     end
