@@ -22,7 +22,8 @@ after_initialize do
     def self.generate_invite_tokens(invited_by, emails_invited, group_names = nil)
       invite_tokens = []
       
-      group_ids = get_group_ids(group_names)
+      # HOT FIX - remove get_group_ids since it has been removed with this changes: https://github.com/discourse/discourse/pull/12298
+      group_ids = [] # get_group_ids(group_names)
 
       emails_invited.each do |email_invited|
         invite = Invite.create!(invited_by: invited_by, email: email_invited)
